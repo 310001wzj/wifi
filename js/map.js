@@ -23,8 +23,27 @@ class MapManager {
      * @returns {void}
      */
     initMap(options = {}) {
-        // TODO: 實現地圖初始化
-        throw new Error('initMap() not implemented');
+        const center = options.center || this.defaultCenter;
+        const zoom = options.zoom || this.defaultZoom;
+
+        try {
+            // 使用 Leaflet 初始化地圖
+            this.map = L.map(this.mapElementId).setView(
+                [center.lat, center.lng],
+                zoom
+            );
+
+            // 添加 OpenStreetMap 圖層
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                minZoom: 2
+            }).addTo(this.map);
+
+            console.log('地圖初始化成功');
+        } catch (error) {
+            console.error('地圖初始化失敗:', error);
+        }
     }
 
     /**
@@ -35,8 +54,21 @@ class MapManager {
      * @returns {void}
      */
     setCenter(lat, lng, zoom = this.defaultZoom) {
-        // TODO: 實現設定中心邏輯
-        throw new Error('setCenter() not implemented');
+        if (this.map && this.isValidCoordinate(lat, lng)) {
+            this.map.setView([lat, lng], zoom);
+        }
+    }
+
+    /**
+     * 驗證坐標有效性
+     * @param {number} lat
+     * @param {number} lng
+     * @returns {boolean}
+     */
+    isValidCoordinate(lat, lng) {
+        return typeof lat === 'number' && typeof lng === 'number' &&
+            lat >= -90 && lat <= 90 &&
+            lng >= -180 && lng <= 180;
     }
 
     /**
@@ -48,8 +80,47 @@ class MapManager {
      * @returns {void}
      */
     addMarker(id, lat, lng, options = {}) {
-        // TODO: 實現添加標記邏輯
-        throw new Error('addMarker() not implemented');
+        if (!this.map || !this.isValidCoordinate(lat, lng)) {
+            return;
+        }
+
+        try {
+            const color = options.color || 'blue';
+            const colorMap = {
+                'red': '#f44336',
+                'green': '#4caf50',
+                'blue': '#2196f3',
+                'orange': '#ff9800',
+                'yellow': '#ffeb3b'
+            };
+
+            const markerColor = colorMap[color] || colorMap.blue;
+
+            // 創建帶顏色的圖標
+            const markerIcon = L.icon({
+                iconUrl: `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMCIvPjwvc3ZnPg==`,
+                className: 'custom-marker',
+                html: `<div style="width: 30px; height: 40px; background-color: ${markerColor}; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;"><span style="transform: rotate(45deg); color: white; font-size: 16px;">📍</span></div>`,
+                iconSize: [30, 40],
+                iconAnchor: [15, 40],
+                popupAnchor: [0, -40]
+            });
+
+            const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(this.map);
+            
+            if (options.popup) {
+                marker.bindPopup(`<b>${options.popup}</b>`);
+            }
+
+            if (options.title) {
+                marker.setTitle(options.title);
+            }
+
+            this.markers[id] = marker;
+            console.log('添加標記:', id);
+        } catch (error) {
+            console.error('添加標記失敗:', error);
+        }
     }
 
     /**
@@ -58,8 +129,10 @@ class MapManager {
      * @returns {void}
      */
     removeMarker(id) {
-        // TODO: 實現移除標記邏輯
-        throw new Error('removeMarker() not implemented');
+        if (this.markers[id] && this.map) {
+            this.map.removeLayer(this.markers[id]);
+            delete this.markers[id];
+        }
     }
 
     /**
@@ -70,8 +143,9 @@ class MapManager {
      * @returns {void}
      */
     updateMarkerPosition(id, lat, lng) {
-        // TODO: 實現更新位置邏輯
-        throw new Error('updateMarkerPosition() not implemented');
+        if (this.markers[id] && this.isValidCoordinate(lat, lng)) {
+            this.markers[id].setLatLng([lat, lng]);
+        }
     }
 
     /**
@@ -81,8 +155,14 @@ class MapManager {
      * @returns {void}
      */
     updateMarkerInfo(id, data) {
-        // TODO: 實現更新信息邏輯
-        throw new Error('updateMarkerInfo() not implemented');
+        if (this.markers[id]) {
+            if (data.title) {
+                this.markers[id].setTitle(data.title);
+            }
+            if (data.popup) {
+                this.markers[id].setPopupContent(`<b>${data.popup}</b>`);
+            }
+        }
     }
 
     /**
@@ -90,8 +170,10 @@ class MapManager {
      * @returns {void}
      */
     clearMarkers() {
-        // TODO: 實現清空邏輯
-        throw new Error('clearMarkers() not implemented');
+        Object.keys(this.markers).forEach(id => {
+            this.removeMarker(id);
+        });
+        this.markers = {};
     }
 
     /**

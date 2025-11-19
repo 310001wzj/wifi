@@ -60,8 +60,21 @@ class Application {
      * @returns {Promise<void>}
      */
     async loadLocations() {
-        // TODO: 實現位置加載邏輯
-        throw new Error('loadLocations() not implemented');
+        try {
+            this.uiManager.showLoading('載入WiFi位置中...');
+            
+            // 模擬加載數據（實際使用GUN.js）
+            const locations = await this.locationManager.getLocations();
+            
+            this.uiManager.updateLocationList(locations);
+            this.uiManager.updateMapView(locations);
+            
+            this.uiManager.hideLoading();
+            console.log('已加載', locations.length, '個位置');
+        } catch (error) {
+            console.error('加載位置失敗:', error);
+            this.uiManager.showError('加載位置失敗');
+        }
     }
 
     /**
@@ -71,8 +84,10 @@ class Application {
      * @returns {void}
      */
     handleUserLogin(user) {
-        // TODO: 實現登錄後的處理邏輯
-        throw new Error('handleUserLogin() not implemented');
+        console.log('用戶登錄:', user.username);
+        this.uiManager.updateUserInfo(user);
+        this.uiManager.closeModal('login');
+        this.uiManager.showSuccess(`歡迎回來, ${user.username}!`);
     }
 
     /**
@@ -81,8 +96,117 @@ class Application {
      * @returns {void}
      */
     handleUserLogout() {
-        // TODO: 實現登出處理邏輯
-        throw new Error('handleUserLogout() not implemented');
+        console.log('用戶登出');
+        this.authManager.logout();
+        this.uiManager.updateUserInfo(null);
+        this.storageManager.removeLocalStorage('currentUser');
+        this.uiManager.showSuccess('已登出');
+    }
+
+    /**
+     * 處理認證表單提交
+     * @param {string} username
+     * @param {string} password
+     * @returns {Promise<void>}
+     */
+    async handleAuthSubmit(username, password) {
+        try {
+            this.uiManager.showLoading('登錄中...');
+            
+            const success = await this.authManager.login(username, password);
+            
+            if (success) {
+                const user = this.authManager.getCurrentUser();
+                this.handleUserLogin(user);
+                this.storageManager.setLocalStorage('currentUser', user);
+            } else {
+                this.uiManager.showError('登錄失敗: 用戶名或密碼錯誤');
+            }
+            
+            this.uiManager.hideLoading();
+        } catch (error) {
+            console.error('登錄錯誤:', error);
+            this.uiManager.showError('登錄發生錯誤');
+            this.uiManager.hideLoading();
+        }
+    }
+
+    /**
+     * 處理新增位置
+     * @param {object} locationData
+     * @returns {Promise<void>}
+     */
+    async handleAddLocation(locationData) {
+        try {
+            if (!this.authManager.isLoggedIn()) {
+                this.uiManager.showError('請先登錄');
+                return;
+            }
+
+            this.uiManager.showLoading('新增位置中...');
+            
+            const success = await this.locationManager.addLocation(locationData);
+            
+            if (success) {
+                this.uiManager.showSuccess('位置新增成功!');
+                this.uiManager.clearForm('location-form');
+                this.uiManager.closeModal('addLocation');
+                await this.loadLocations();
+            } else {
+                this.uiManager.showError('位置新增失敗');
+            }
+            
+            this.uiManager.hideLoading();
+        } catch (error) {
+            console.error('新增位置錯誤:', error);
+            this.uiManager.showError('新增位置發生錯誤');
+            this.uiManager.hideLoading();
+        }
+    }
+
+    /**
+     * 處理搜索
+     * @param {string} query
+     * @returns {Promise<void>}
+     */
+    async handleSearch(query) {
+        try {
+            if (!query.trim()) {
+                await this.loadLocations();
+                return;
+            }
+
+            const locations = await this.locationManager.searchLocations(query);
+            this.uiManager.updateLocationList(locations);
+            this.uiManager.updateMapView(locations);
+        } catch (error) {
+            console.error('搜索錯誤:', error);
+            this.uiManager.showError('搜索失敗');
+        }
+    }
+
+    /**
+     * 處理篩選變更
+     * @returns {Promise<void>}
+     */
+    async handleFilterChange() {
+        try {
+            const openOnly = document.getElementById('filter-open-only').checked;
+            const noPassword = document.getElementById('filter-no-password').checked;
+            
+            const locations = await this.locationManager.getLocations();
+            
+            const filtered = locations.filter(loc => {
+                if (openOnly && !loc.isOpen) return false;
+                if (noPassword && loc.hasPassword) return false;
+                return true;
+            });
+            
+            this.uiManager.updateLocationList(filtered);
+            this.uiManager.updateMapView(filtered);
+        } catch (error) {
+            console.error('篩選錯誤:', error);
+        }
     }
 
     /**

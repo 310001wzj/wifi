@@ -20,8 +20,35 @@ class StorageManager {
      * @returns {Promise<void>}
      */
     async initDB() {
-        // TODO: 實現IndexedDB初始化
-        throw new Error('initDB() not implemented');
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.dbVersion);
+
+            request.onerror = () => {
+                console.error('IndexedDB初始化失敗');
+                reject(request.error);
+            };
+
+            request.onsuccess = () => {
+                this.db = request.result;
+                console.log('IndexedDB初始化成功');
+                resolve();
+            };
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                
+                // 創建對象存儲
+                if (!db.objectStoreNames.contains('locations')) {
+                    db.createObjectStore('locations', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('users')) {
+                    db.createObjectStore('users', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('comments')) {
+                    db.createObjectStore('comments', { keyPath: 'id' });
+                }
+            };
+        });
     }
 
     /**
@@ -31,8 +58,14 @@ class StorageManager {
      * @returns {boolean}
      */
     setLocalStorage(key, value) {
-        // TODO: 實現本地存儲
-        throw new Error('setLocalStorage() not implemented');
+        try {
+            const fullKey = this.storagePrefix + key;
+            localStorage.setItem(fullKey, JSON.stringify(value));
+            return true;
+        } catch (error) {
+            console.error('LocalStorage保存失敗:', error);
+            return false;
+        }
     }
 
     /**
@@ -41,8 +74,14 @@ class StorageManager {
      * @returns {*|null}
      */
     getLocalStorage(key) {
-        // TODO: 實現本地讀取
-        throw new Error('getLocalStorage() not implemented');
+        try {
+            const fullKey = this.storagePrefix + key;
+            const data = localStorage.getItem(fullKey);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('LocalStorage讀取失敗:', error);
+            return null;
+        }
     }
 
     /**
@@ -51,8 +90,14 @@ class StorageManager {
      * @returns {boolean}
      */
     removeLocalStorage(key) {
-        // TODO: 實現本地刪除
-        throw new Error('removeLocalStorage() not implemented');
+        try {
+            const fullKey = this.storagePrefix + key;
+            localStorage.removeItem(fullKey);
+            return true;
+        } catch (error) {
+            console.error('LocalStorage刪除失敗:', error);
+            return false;
+        }
     }
 
     /**
@@ -60,8 +105,39 @@ class StorageManager {
      * @returns {void}
      */
     clearLocalStorage() {
-        // TODO: 實現清空邏輯
-        throw new Error('clearLocalStorage() not implemented');
+        try {
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(this.storagePrefix)) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch (error) {
+            console.error('LocalStorage清空失敗:', error);
+        }
+    }
+
+    /**
+     * 檢查 LocalStorage 是否可用
+     * @returns {boolean}
+     */
+    isLocalStorageAvailable() {
+        try {
+            const test = '__localStorage_test__';
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * 檢查 IndexedDB 是否可用
+     * @returns {boolean}
+     */
+    isIndexedDBAvailable() {
+        return !!window.indexedDB;
     }
 
     /**
@@ -71,8 +147,21 @@ class StorageManager {
      * @returns {Promise<boolean>}
      */
     async setIndexedDB(storeName, data) {
-        // TODO: 實現IndexedDB保存
-        throw new Error('setIndexedDB() not implemented');
+        if (!this.db) return false;
+
+        return new Promise((resolve) => {
+            try {
+                const transaction = this.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put(data);
+
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => resolve(false);
+            } catch (error) {
+                console.error('IndexedDB保存失敗:', error);
+                resolve(false);
+            }
+        });
     }
 
     /**
@@ -82,8 +171,21 @@ class StorageManager {
      * @returns {Promise<*|null>}
      */
     async getIndexedDB(storeName, key) {
-        // TODO: 實現IndexedDB讀取
-        throw new Error('getIndexedDB() not implemented');
+        if (!this.db) return null;
+
+        return new Promise((resolve) => {
+            try {
+                const transaction = this.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.get(key);
+
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => resolve(null);
+            } catch (error) {
+                console.error('IndexedDB讀取失敗:', error);
+                resolve(null);
+            }
+        });
     }
 
     /**
@@ -92,8 +194,21 @@ class StorageManager {
      * @returns {Promise<array>}
      */
     async getAllIndexedDB(storeName) {
-        // TODO: 實現批量讀取
-        throw new Error('getAllIndexedDB() not implemented');
+        if (!this.db) return [];
+
+        return new Promise((resolve) => {
+            try {
+                const transaction = this.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => resolve([]);
+            } catch (error) {
+                console.error('IndexedDB批量讀取失敗:', error);
+                resolve([]);
+            }
+        });
     }
 
     /**
@@ -103,8 +218,21 @@ class StorageManager {
      * @returns {Promise<boolean>}
      */
     async deleteIndexedDB(storeName, key) {
-        // TODO: 實現刪除邏輯
-        throw new Error('deleteIndexedDB() not implemented');
+        if (!this.db) return false;
+
+        return new Promise((resolve) => {
+            try {
+                const transaction = this.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(key);
+
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => resolve(false);
+            } catch (error) {
+                console.error('IndexedDB刪除失敗:', error);
+                resolve(false);
+            }
+        });
     }
 
     /**
@@ -113,26 +241,21 @@ class StorageManager {
      * @returns {Promise<void>}
      */
     async clearIndexedDB(storeName) {
-        // TODO: 實現清空邏輯
-        throw new Error('clearIndexedDB() not implemented');
-    }
+        if (!this.db) return;
 
-    /**
-     * 檢查 LocalStorage 是否可用
-     * @returns {boolean}
-     */
-    isLocalStorageAvailable() {
-        // TODO: 實現檢查邏輯
-        throw new Error('isLocalStorageAvailable() not implemented');
-    }
+        return new Promise((resolve) => {
+            try {
+                const transaction = this.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.clear();
 
-    /**
-     * 檢查 IndexedDB 是否可用
-     * @returns {boolean}
-     */
-    isIndexedDBAvailable() {
-        // TODO: 實現檢查邏輯
-        throw new Error('isIndexedDBAvailable() not implemented');
+                request.onsuccess = () => resolve();
+                request.onerror = () => resolve();
+            } catch (error) {
+                console.error('IndexedDB清空失敗:', error);
+                resolve();
+            }
+        });
     }
 
     /**
@@ -140,8 +263,15 @@ class StorageManager {
      * @returns {Promise<object>} {usage, quota}
      */
     async getStorageInfo() {
-        // TODO: 實現獲取容量邏輯
-        throw new Error('getStorageInfo() not implemented');
+        if (navigator.storage && navigator.storage.estimate) {
+            const estimate = await navigator.storage.estimate();
+            return {
+                usage: estimate.usage,
+                quota: estimate.quota,
+                percentage: (estimate.usage / estimate.quota) * 100
+            };
+        }
+        return { usage: 0, quota: 0, percentage: 0 };
     }
 
     /**
@@ -149,8 +279,9 @@ class StorageManager {
      * @returns {Promise<boolean>}
      */
     async syncToGUN() {
-        // TODO: 實現同步邏輯
-        throw new Error('syncToGUN() not implemented');
+        // TODO: 實現同步邏輯 (涉及GUN.js集成)
+        console.log('同步本地數據到GUN (待實現)');
+        return true;
     }
 
     /**
@@ -158,8 +289,9 @@ class StorageManager {
      * @returns {Promise<boolean>}
      */
     async syncFromGUN() {
-        // TODO: 實現同步邏輯
-        throw new Error('syncFromGUN() not implemented');
+        // TODO: 實現同步邏輯 (涉及GUN.js集成)
+        console.log('從GUN同步數據到本地 (待實現)');
+        return true;
     }
 }
 

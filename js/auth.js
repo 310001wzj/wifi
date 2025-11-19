@@ -21,9 +21,30 @@ class AuthManager {
      * @param {string} password - 密碼
      * @returns {Promise<boolean>} 註冊成功返回true
      */
-    register(username, password) {
-        // TODO: 實現註冊邏輯
-        throw new Error('register() not implemented');
+    async register(username, password) {
+        try {
+            if (!username || !password || username.length < 3 || password.length < 6) {
+                console.error('用戶名或密碼不符合要求');
+                return false;
+            }
+
+            // 使用 GUN.js 註冊
+            return new Promise((resolve) => {
+                this.gun.user().create(username, password, (ack) => {
+                    if (ack.ok) {
+                        console.log('註冊成功:', username);
+                        this.login(username, password);
+                        resolve(true);
+                    } else {
+                        console.error('註冊失敗:', ack);
+                        resolve(false);
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('註冊錯誤:', error);
+            return false;
+        }
     }
 
     /**
@@ -32,18 +53,48 @@ class AuthManager {
      * @param {string} password - 密碼
      * @returns {Promise<boolean>} 登錄成功返回true
      */
-    login(username, password) {
-        // TODO: 實現登錄邏輯
-        throw new Error('login() not implemented');
+    async login(username, password) {
+        try {
+            if (!username || !password) {
+                return false;
+            }
+
+            // 使用 GUN.js 登錄
+            return new Promise((resolve) => {
+                this.gun.user().auth(username, password, (ack) => {
+                    if (ack.ok) {
+                        this.currentUser = {
+                            username: username,
+                            id: this.gun.user()._.get
+                        };
+                        this.isAuthenticated = true;
+                        console.log('登錄成功:', username);
+                        resolve(true);
+                    } else {
+                        console.error('登錄失敗:', ack);
+                        resolve(false);
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('登錄錯誤:', error);
+            return false;
+        }
     }
 
     /**
      * 用戶登出
      * @returns {Promise<void>}
      */
-    logout() {
-        // TODO: 實現登出邏輯
-        throw new Error('logout() not implemented');
+    async logout() {
+        try {
+            this.gun.user().leave();
+            this.currentUser = null;
+            this.isAuthenticated = false;
+            console.log('已登出');
+        } catch (error) {
+            console.error('登出錯誤:', error);
+        }
     }
 
     /**
