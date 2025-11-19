@@ -1,0 +1,263 @@
+/* ========================================
+   響應式設計 - 手機/平板適配
+   ======================================== */
+
+/* 平板設備 (768px - 1024px) */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 300px;
+    }
+    
+    .navbar {
+        padding: 0.8rem 1.5rem;
+    }
+    
+    .navbar-brand h1 {
+        font-size: 1.3rem;
+    }
+}
+
+/* 手機設備 (最大 768px) */
+@media (max-width: 768px) {
+    #app-container {
+        flex-direction: column;
+    }
+    
+    .main-content {
+        flex-direction: column;
+    }
+    
+    /* 隱藏側邊欄，用抽屜模式 */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px;
+        width: 100%;
+        height: calc(100% - 60px);
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .map-container {
+        width: 100%;
+        height: calc(100% - 60px);
+    }
+    
+    .navbar {
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .navbar-brand h1 {
+        font-size: 1.1rem;
+        flex: 1;
+    }
+    
+    .navbar-menu {
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    button {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: 100%;
+        padding: 1.5rem;
+    }
+    
+    .modal h2 {
+        font-size: 1.3rem;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="email"],
+    textarea {
+        font-size: 16px; /* 防止iOS縮放 */
+    }
+    
+    .sidebar-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .location-list {
+        max-height: 300px;
+    }
+    
+    .location-item {
+        padding: 0.8rem;
+    }
+}
+
+/* 小手機 (最大 480px) */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .navbar-brand h1 {
+        font-size: 1rem;
+    }
+    
+    .navbar-menu {
+        gap: 0.3rem;
+        font-size: 0.8rem;
+    }
+    
+    .navbar-menu button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    
+    .sidebar-section h3 {
+        font-size: 0.9rem;
+    }
+    
+    .modal-content {
+        padding: 1rem;
+    }
+    
+    .modal h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    form {
+        gap: 0.8rem;
+    }
+    
+    button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .comment-item {
+        padding: 0.7rem;
+    }
+    
+    .popup-info-item {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+}
+
+/* 橫屏模式 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    .sidebar {
+        max-height: calc(100vh - 50px);
+    }
+    
+    .location-list {
+        max-height: 200px;
+    }
+}
+
+/* 打印樣式 */
+@media print {
+    .navbar,
+    .sidebar,
+    .btn-primary,
+    .btn-secondary,
+    .btn-link,
+    button,
+    input,
+    form {
+        display: none !important;
+    }
+    
+    .map-container {
+        width: 100%;
+        height: auto;
+    }
+    
+    .map {
+        height: 500px;
+    }
+}
+
+/* 深色模式支持 (可選) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #0d6efd;
+        --light: #212529;
+        --dark: #f8f9fa;
+    }
+    
+    body {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .sidebar {
+        background: #2d2d2d;
+        border-right-color: #444;
+        color: #e0e0e0;
+    }
+    
+    .sidebar-section h3 {
+        color: #e0e0e0;
+    }
+    
+    .search-input,
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea {
+        background: #3a3a3a;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+    
+    .location-item {
+        background: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+    }
+    
+    .location-item:hover {
+        background-color: #444;
+    }
+    
+    .modal-content {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+    
+    .modal-close {
+        color: #999;
+    }
+}
+
+/* 觸摸設備優化 */
+@media (hover: none) and (pointer: coarse) {
+    button,
+    .location-item {
+        padding: 1rem;
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .leaflet-control-zoom a {
+        width: 44px;
+        height: 44px;
+        line-height: 44px;
+    }
+}

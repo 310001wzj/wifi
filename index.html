@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free WiFi Locator - 遊戲玩家WiFi定位器</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <!-- 自定義CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/map.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- 導航欄 -->
+        <nav id="navbar" class="navbar">
+            <div class="navbar-brand">
+                <h1>📍 Free WiFi Locator</h1>
+            </div>
+            <div class="navbar-menu">
+                <button id="btn-login" class="btn-primary">登錄</button>
+                <button id="btn-logout" class="btn-secondary" style="display: none;">登出</button>
+                <span id="user-info" class="user-info"></span>
+            </div>
+        </nav>
+
+        <!-- 主內容區域 -->
+        <div class="main-content">
+            <!-- 側邊欄 -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>搜索</h3>
+                    <input type="text" id="search-input" placeholder="搜索WiFi名稱或位置..." class="search-input">
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>篩選</h3>
+                    <label>
+                        <input type="checkbox" id="filter-open-only"> 僅顯示營業中
+                    </label>
+                    <label>
+                        <input type="checkbox" id="filter-no-password"> 僅顯示不需密碼
+                    </label>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>操作</h3>
+                    <button id="btn-add-location" class="btn-primary" style="width: 100%;">新增WiFi位置</button>
+                </div>
+
+                <!-- WiFi列表 -->
+                <div class="sidebar-section">
+                    <h3>附近位置</h3>
+                    <div id="location-list" class="location-list">
+                        <p class="placeholder">載入中...</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 地圖區域 -->
+            <main class="map-container">
+                <div id="map" class="map"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 登錄模態框 -->
+    <div id="modal-login" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>用戶登錄/註冊</h2>
+            <form id="auth-form">
+                <input type="text" id="auth-username" placeholder="用戶名" required>
+                <input type="password" id="auth-password" placeholder="密碼" required>
+                <button type="submit" class="btn-primary">登錄</button>
+                <button type="button" id="btn-toggle-signup" class="btn-link">沒有帳號？點擊註冊</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 新增位置模態框 -->
+    <div id="modal-add-location" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>新增WiFi位置</h2>
+            <form id="location-form">
+                <input type="text" id="location-name" placeholder="WiFi名稱 (SSID)" required>
+                <input type="text" id="location-address" placeholder="地址" required>
+                <input type="number" id="location-lat" placeholder="緯度" step="0.000001" required>
+                <input type="number" id="location-lng" placeholder="經度" step="0.000001" required>
+                <label>
+                    <input type="checkbox" id="location-has-password"> 需要密碼
+                </label>
+                <input type="text" id="location-password" placeholder="密碼（可選）">
+                <input type="text" id="location-hours" placeholder="營業時間">
+                <button type="submit" class="btn-primary">新增位置</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 位置詳情模態框 -->
+    <div id="modal-location-detail" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="detail-name"></h2>
+            <div id="detail-content" class="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
+    <!-- GUN.js -->
+    <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.3/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.3/sea.js"></script>
+    
+    <!-- Jest (for testing) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jest/29.7.0/jest.min.js"></script>
+    
+    <!-- 應用模塊 -->
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/location.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
