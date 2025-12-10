@@ -27,6 +27,10 @@
         flex-direction: column;
     }
     
+    .mobile-only {
+        display: block;
+    }
+    
     /* 隱藏側邊欄，用抽屜模式 */
     .sidebar {
         position: fixed;

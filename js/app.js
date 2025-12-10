@@ -25,17 +25,22 @@ class Application {
         try {
             console.log('應用初始化中...');
 
-            // 1. 初始化存儲系統
-            await this.storageManager.initDB();
-            console.log('存儲系統初始化完成');
-
-            // 2. 初始化地圖
-            this.mapManager.initMap();
-            console.log('地圖初始化完成');
-
-            // 3. 初始化UI
+            // 1. 初始化UI (優先初始化，確保交互可用)
             this.uiManager.init();
             console.log('UI初始化完成');
+
+            // 2. 初始化存儲系統 (允許失敗)
+            try {
+                await this.storageManager.initDB();
+                console.log('存儲系統初始化完成');
+            } catch (dbError) {
+                console.error('存儲系統初始化失敗，將使用無緩存模式:', dbError);
+                this.uiManager.showWarning('本地存儲初始化失敗，部分功能可能受限');
+            }
+
+            // 3. 初始化地圖
+            this.mapManager.initMap();
+            console.log('地圖初始化完成');
 
             // 4. 檢查已登錄用戶
             const savedUser = this.storageManager.getLocalStorage('currentUser');

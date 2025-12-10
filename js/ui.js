@@ -53,6 +53,14 @@ class UIManager {
             this.openModal('addLocation');
         });
 
+        // 側邊欄切換按鈕
+        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+        if (btnToggleSidebar) {
+            btnToggleSidebar.addEventListener('click', () => {
+                this.toggleSidebar();
+            });
+        }
+
         // 模態框關閉按鈕
         const closeButtons = document.querySelectorAll('.modal-close');
         closeButtons.forEach(btn => {
